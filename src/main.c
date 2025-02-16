@@ -15,6 +15,7 @@ InputBuffer* new_input_buffer(Arena* arena);
 void read_input(InputBuffer* input_buffer);
 void close_input_buffer(InputBuffer* input_buffer, Arena* arena);
 void stop();
+void tokenize(InputBuffer* input_buffer);
 
 Arena* arena;
 
@@ -24,11 +25,12 @@ int main(int argc, char **argv) {
 
   // Inline argument calculation
   if (argc > 1) {
-    char formula[128];
-    for (int i = 1; (i < argc); i++) {
-      strcat(formula, argv[i]);
-    }
-    printf("Computing -> %s\n", formula);
+//    char formula[128];
+//    for (int i = 1; (i < argc); i++) {
+//      strcat(formula, argv[i]);
+//    }
+//    printf("Computing -> %s\n", formula);
+    printf("Not supported atm.\n");
     stop();
   }
 
@@ -37,12 +39,19 @@ int main(int argc, char **argv) {
     print_prompt();
     read_input(input_buffer);
 
+    // Refactor this shit
     if (strcmp(input_buffer->buffer, "exit") == 0) {
+      stop();
+    }
+    if (strcmp(input_buffer->buffer, "q") == 0) {
+      stop();
+    }
+    if (strcmp(input_buffer->buffer, "quit") == 0) {
       stop();
     }
 
     // Parse Input and evaluate
-    printf("Here we should parse the input and evaluate.\n");
+    tokenize(input_buffer);
   }
 }
 
@@ -79,4 +88,18 @@ void read_input(InputBuffer* input_buffer) {
 
 void close_input_buffer(InputBuffer* input_buffer, Arena* arena) {
   arena_clear(arena);
+}
+
+void tokenize(InputBuffer* input_buffer){
+  for (int i = 0; i < input_buffer->input_length; i++) {
+    // Get the value of the string
+    char value = input_buffer->buffer[i];
+
+    // Remove not needed values, i.e. white spaces
+    if (value == ' ') {
+      continue;
+    }
+
+    printf("%C\n", value);
+  }
 }
