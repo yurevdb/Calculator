@@ -10,6 +10,22 @@ typedef struct {
   size_t input_length;
 } InputBuffer;
 
+typedef enum {
+  VALUE,
+  ADD,
+  SUBTRACT,
+  MULTIPLY,
+  DIVIDE,
+  POWER,
+  BRACKET_OPEN,
+  BRACKET_CLOSE
+} TOKEN_TYPE;
+
+typedef struct {
+  void* value;
+  TOKEN_TYPE type;
+} Token;
+
 void print_prompt();
 InputBuffer* new_input_buffer(Arena* arena);
 void read_input(InputBuffer* input_buffer);
@@ -90,16 +106,64 @@ void close_input_buffer(InputBuffer* input_buffer, Arena* arena) {
   arena_clear(arena);
 }
 
+char* print_token_type(const TOKEN_TYPE type) {
+  switch (type) {
+    case VALUE: return "VALUE";
+    case ADD: return "ADD";
+    case SUBTRACT: return "SUBTRACT";
+    case MULTIPLY: return "MULTIPLY";
+    case DIVIDE: return "DIVIDE";
+    case POWER: return "POWER";
+    case BRACKET_OPEN: return "OPEN BRACKET";
+    case BRACKET_CLOSE: return "CLOSE BRACKET";
+    default: return "Unkown";
+  }
+}
+
 void tokenize(InputBuffer* input_buffer){
   for (int i = 0; i < input_buffer->input_length; i++) {
-    // Get the value of the string
     char value = input_buffer->buffer[i];
 
-    // Remove not needed values, i.e. white spaces
+    // Remove not needed values, i.e. white spaces => should become a map or something
     if (value == ' ') {
       continue;
     }
 
-    printf("%C\n", value);
+    Token token = {
+      .value  = &value
+    };
+    switch (value) {
+      case '+':
+        token.type = ADD;
+        break;
+      case '-':
+        token.type = SUBTRACT;
+        break;
+      case '*':
+        token.type = MULTIPLY;
+        break;
+      case '/':
+        token.type = DIVIDE;
+        break;
+      case '^':
+        token.type = POWER;
+        break;
+      case '(':
+      case '{':
+      case '[':
+        token.type = BRACKET_OPEN;
+        break;
+      case ')':
+      case '}':
+      case ']':
+        token.type = BRACKET_CLOSE;
+        break;
+      default:
+        token.type = VALUE;
+        // TODO: lookahead to find end of value given
+        break;
+    }
+
+    printf("%c => %s\n", *(char*)token.value, print_token_type(token.type));
   }
 }
