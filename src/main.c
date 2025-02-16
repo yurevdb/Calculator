@@ -1,7 +1,8 @@
 #include "../libs/io.c"
 #include "../libs/mem.c"
-#include "stdlib.h"
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef struct {
   char* buffer;
@@ -23,7 +24,11 @@ int main(int argc, char **argv) {
 
   // Inline argument calculation
   if (argc > 1) {
-    printf("Computing -> %s\n", argv[1]);
+    char formula[128];
+    for (int i = 1; (i < argc); i++) {
+      strcat(formula, argv[i]);
+    }
+    printf("Computing -> %s\n", formula);
     stop();
   }
 
