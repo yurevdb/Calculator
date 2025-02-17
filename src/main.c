@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef struct {
   char* buffer;
@@ -22,7 +23,7 @@ typedef enum {
 } TOKEN_TYPE;
 
 typedef struct {
-  void* value;
+  char* value;
   TOKEN_TYPE type;
 } Token;
 
@@ -32,6 +33,7 @@ void read_input(InputBuffer* input_buffer);
 void close_input_buffer(InputBuffer* input_buffer, Arena* arena);
 void stop();
 void tokenize(InputBuffer* input_buffer);
+void find_end_of_token(const InputBuffer* input_buffer, int* index);
 
 Arena* arena;
 
@@ -129,9 +131,8 @@ void tokenize(InputBuffer* input_buffer){
       continue;
     }
 
-    Token token = {
-      .value  = &value
-    };
+    Token token;
+    token.value = &value;
     switch (value) {
       case '+':
         token.type = ADD;
@@ -160,10 +161,46 @@ void tokenize(InputBuffer* input_buffer){
         break;
       default:
         token.type = VALUE;
-        // TODO: lookahead to find end of value given
+        int start = i;
+        find_end_of_token(input_buffer, &i);
+        //token.value = (char*)arena_alloc(arena, 64);
+        strncpy(token.value, &input_buffer->buffer[start], i - start);
         break;
     }
 
-    printf("%c => %s\n", *(char*)token.value, print_token_type(token.type));
+    printf("%s => %s\n", token.value, print_token_type(token.type));
   }
+}
+
+void find_end_of_token(const InputBuffer* input_buffer, int* index){
+  // Check if the next_value is a token of any kind
+  bool is_value = true;
+
+  while (is_value && *index <= (int)input_buffer->input_length) {
+    // Index is current character, so the looking ahead should iterate the index first?
+    char next_value = input_buffer->buffer[++*index];
+    // TODO: this should really be a map of some sort
+    switch (next_value) {
+      case ' ':
+      case '\0':
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+      case '^':
+      case '(':
+      case '{':
+      case '[':
+      case ')':
+      case '}':
+      case ']':
+        is_value = false;
+        break;
+      default:
+        is_value = true;
+        break;
+    }
+  }
+
+  index--;
 }
